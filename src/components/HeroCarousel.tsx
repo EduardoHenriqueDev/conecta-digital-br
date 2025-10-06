@@ -1,38 +1,80 @@
 import { useState, useEffect } from 'react';
 import { ChevronLeft, ChevronRight, Clock, Eye } from 'lucide-react';
-import { Article } from '../lib/supabase';
+// Substitui import do Article (não usado com news API)
+import type {} from 'react'; // mantém arquivo como módulo
+// Tipagem flexível para suportar artigos do Supabase ou da API externa
+type CarouselArticle = {
+  title: string;
+  image_url?: string;
+  image?: string;
+  excerpt?: string;
+  description?: string;
+  author?: string;
+  published_at?: string;
+  publishedAt?: string;
+  views?: number;
+};
 
 interface HeroCarouselProps {
-  articles: Article[];
+  articles: CarouselArticle[];
 }
 
 export default function HeroCarousel({ articles }: HeroCarouselProps) {
   const [currentIndex, setCurrentIndex] = useState(0);
 
+  // Reset index quando mudar tamanho
   useEffect(() => {
+    if (!articles.length) {
+      setCurrentIndex(0);
+      return;
+    }
+    if (currentIndex >= articles.length || !Number.isFinite(currentIndex)) {
+      setCurrentIndex(0);
+    }
+  }, [articles.length]);
+
+  useEffect(() => {
+    if (articles.length <= 1) return; // não cria intervalo desnecessário
     const timer = setInterval(() => {
-      setCurrentIndex((prev) => (prev + 1) % articles.length);
+      setCurrentIndex((prev) => {
+        if (articles.length === 0) return 0;
+        return (prev + 1) % articles.length;
+      });
     }, 6000);
     return () => clearInterval(timer);
   }, [articles.length]);
 
   const goToPrevious = () => {
+    if (!articles.length) return;
     setCurrentIndex((prev) => (prev - 1 + articles.length) % articles.length);
   };
 
   const goToNext = () => {
+    if (!articles.length) return;
     setCurrentIndex((prev) => (prev + 1) % articles.length);
   };
 
   if (articles.length === 0) return null;
 
   const currentArticle = articles[currentIndex];
+  if (!currentArticle) return null;
+
+  const image =
+    currentArticle.image_url ||
+    currentArticle.image ||
+    'https://via.placeholder.com/1200x600?text=Sem+Imagem';
+  const excerpt = currentArticle.excerpt || currentArticle.description || '';
+  const published =
+    currentArticle.published_at ||
+    currentArticle.publishedAt ||
+    new Date().toISOString();
+  const views = currentArticle.views ?? 0;
 
   return (
     <div className="relative w-full h-[500px] lg:h-[600px] overflow-hidden rounded-2xl group">
       <div
         className="absolute inset-0 bg-cover bg-center transition-all duration-700 ease-out transform group-hover:scale-105"
-        style={{ backgroundImage: `url(${currentArticle.image_url})` }}
+        style={{ backgroundImage: `url(${image})` }}
       >
         <div className="absolute inset-0 bg-gradient-to-t from-black via-black/60 to-transparent" />
       </div>
@@ -47,7 +89,7 @@ export default function HeroCarousel({ articles }: HeroCarouselProps) {
               <div className="flex items-center space-x-1">
                 <Clock className="w-4 h-4" />
                 <span>
-                  {new Date(currentArticle.published_at).toLocaleDateString('pt-BR', {
+                  {new Date(published).toLocaleDateString('pt-BR', {
                     day: '2-digit',
                     month: 'short',
                   })}
@@ -55,7 +97,7 @@ export default function HeroCarousel({ articles }: HeroCarouselProps) {
               </div>
               <div className="flex items-center space-x-1">
                 <Eye className="w-4 h-4" />
-                <span>{currentArticle.views.toLocaleString('pt-BR')}</span>
+                <span>{views.toLocaleString('pt-BR')}</span>
               </div>
             </div>
           </div>
@@ -65,14 +107,16 @@ export default function HeroCarousel({ articles }: HeroCarouselProps) {
           </h2>
 
           <p className="text-gray-200 text-base lg:text-lg mb-6 line-clamp-2">
-            {currentArticle.excerpt}
+            {excerpt}
           </p>
 
           <div className="flex items-center space-x-4">
             <button className="px-6 py-3 bg-cyan-500 hover:bg-cyan-600 text-white font-semibold rounded-lg transition-all hover:scale-105 transform">
               Ler Mais
             </button>
-            <span className="text-gray-300 text-sm">Por {currentArticle.author}</span>
+            <span className="text-gray-300 text-sm">
+              Por {currentArticle.author || 'Desconhecido'}
+            </span>
           </div>
         </div>
       </div>

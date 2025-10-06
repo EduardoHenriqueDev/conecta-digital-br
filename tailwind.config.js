@@ -26,7 +26,24 @@ export default {
           '100%': { transform: 'scale(1)', opacity: '1' },
         },
       },
+      colors: {
+        brand: {
+          50: '#effaff',
+          100: '#dff4ff',
+          500: '#06b6d4',
+          600: '#0891b2',
+          700: '#0e7490',
+        },
+      },
+      backdropBlur: {
+        xs: '2px',
+      },
+      boxShadow: {
+        'soft': '0 4px 20px -2px rgba(0,0,0,0.08)',
+      },
     },
   },
-  plugins: [],
+  plugins: [
+    require('@tailwindcss/line-clamp'),
+  ],
 };

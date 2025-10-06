@@ -1,8 +1,14 @@
 import { TrendingUp, Star, Mail } from 'lucide-react';
-import { Article } from '../lib/supabase';
+
+type SidebarArticle = {
+  id?: string;
+  title: string;
+  views?: number;
+  url?: string;
+};
 
 interface SidebarProps {
-  trendingArticles: Article[];
+  trendingArticles: SidebarArticle[];
 }
 
 export default function Sidebar({ trendingArticles }: SidebarProps) {
@@ -15,21 +21,30 @@ export default function Sidebar({ trendingArticles }: SidebarProps) {
         </div>
 
         <div className="space-y-4">
-          {trendingArticles.slice(0, 5).map((article, index) => (
-            <div key={article.id} className="flex space-x-3 group cursor-pointer">
-              <span className="text-3xl font-bold text-gray-200 dark:text-gray-700">
-                {String(index + 1).padStart(2, '0')}
-              </span>
-              <div className="flex-1">
-                <h4 className="text-sm font-semibold text-gray-900 dark:text-white group-hover:text-cyan-500 transition-colors line-clamp-2">
-                  {article.title}
-                </h4>
-                <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
-                  {article.views.toLocaleString('pt-BR')} visualizações
-                </p>
+          {trendingArticles.slice(0, 5).map((article, index) => {
+            const views = typeof article.views === 'number' ? article.views : 0;
+            return (
+              <div
+                key={article.id || article.url || article.title + index}
+                className="flex space-x-3 group cursor-pointer"
+              >
+                <span className="text-3xl font-bold text-gray-200 dark:text-gray-700">
+                  {String(index + 1).padStart(2, '0')}
+                </span>
+                <div className="flex-1">
+                  <h4 className="text-sm font-semibold text-gray-900 dark:text-white group-hover:text-cyan-500 transition-colors line-clamp-2">
+                    {article.title}
+                  </h4>
+                  <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                    {views.toLocaleString('pt-BR')} visualizações
+                  </p>
+                </div>
               </div>
-            </div>
-          ))}
+            );
+          })}
+          {trendingArticles.length === 0 && (
+            <p className="text-sm text-gray-500 dark:text-gray-400">Sem dados.</p>
+          )}
         </div>
       </div>
 
